@@ -1,0 +1,9 @@
+---
+endpoints:
+  audit:
+    - payload: true
+      required_payload_keys: ['destinations']
+      api_endpoint: 'application-awx-audit-connectivity'
+    - payload: false
+      api_endpoint: 'application-awx-audit-environment'
+...

@@ -1,0 +1,16 @@
+from fastapi import APIRouter
+from .webhook.webhook import router as webhook_router
+from .demo.demo import router as demo_router
+
+{% for item in modules %}
+from .{{ item }}.{{ item }} import router as {{ item }}_router
+{% endfor %}
+
+router = APIRouter()
+
+router.include_router(webhook_router, prefix="/webhook")
+router.include_router(demo_router, prefix="/demo")
+
+{% for item in modules %}
+router.include_router({{ item }}_router, prefix="/{{ item }}")
+{% endfor %}

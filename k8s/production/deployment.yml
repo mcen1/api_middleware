@@ -1,0 +1,79 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teampi
+  namespace: kong
+  labels:
+    app: teampi 
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: teampi
+  template:
+    metadata:
+      labels:
+        app: teampi
+    spec:
+      containers:
+      - image: ghcr.io/team/team/automation-teampi-container:0.0.44
+        name: teampi
+        imagePullPolicy: IfNotPresent
+        command: ['/bin/sh']
+        args: ['-c','uvicorn main:app --host 0.0.0.0 --port 8000 --root-path /teampi'] 
+        env:
+            # change per env
+          - name: AWX_URL
+            value: 'ap.domain.CompanyCompany.com'
+#          - name: FROMABENV_ITOAAUTH_API_KEY
+#            valueFrom:
+#              secretKeyRef:
+#                name: kongapigatewaysecrets
+#                key: fromabenv_teamauth_api_key
+          - name: AWX_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: kongapigatewaysecrets
+                key: awx_token
+          - name: CERT_VERIFY
+            value: '/etc/ssl/certs/ca-certificates.crt'
+          - name: SNOW_HOST
+            value: 'https://CompanyCompany.service-now.com'
+          - name: SNOW_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: kongapigatewaysecrets
+                key: snow_username
+          - name: SNOW_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: kongapigatewaysecrets
+                key: snow_password
+          - name: SECTIGO_BASE_URL
+            value: 'https://cert-manager.com'
+          - name: SECTIGO_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: kongapigatewaysecrets
+                key: sectigo_username
+          - name: SECTIGO_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: kongapigatewaysecrets
+                key: sectigo_password
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+      restartPolicy: Always
+
+ 

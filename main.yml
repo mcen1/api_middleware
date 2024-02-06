@@ -1,0 +1,61 @@
+---
+- name: ITOA Orchestration API - Dynamic Automation Endpoint Config
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Check that the repo contains a automation_endpoint_config.yml in the root of the directory
+      stat:
+        path: ./automation_endpoint_config.yml
+      register: automation_endpoint_config
+
+    - name: Debug
+      debug:
+        msg: 
+          - "{{ automation_endpoint_config['stat']['exists'] }}"
+
+    - name: Assert that automation_endpoint_config.yml was found in root of directory
+      ansible.builtin.assert:
+        that:
+          - "{{ automation_endpoint_config['stat']['exists'] }}"
+        fail_msg: "automation_endpoint_config.yml file could not be found in the repo. Please add one and try again"
+        success_msg: "automation_endpoint_config.yml file exists in the repo."
+
+    - name: Load automation_endpoint_config.yaml file that was cloned
+      ansible.builtin.include_vars:
+        file: "./automation_endpoint_config.yml"
+        name: endpoint_config
+
+    - name: Template base automation module (.py files)
+      vars:
+        modules: "{{ endpoint_config.endpoints.keys()|list }}"
+      ansible.builtin.template:
+        src: ./templates/automation.j2
+        dest: "./routers/v1/automation/automation.py"
+
+    - name: Create automation module directories
+      ansible.builtin.file:
+        path: "./routers/v1/automation/{{ item.key }}"
+        state: directory
+      loop: "{{ endpoint_config.endpoints | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+
+    - name: Create automation module init files
+      ansible.builtin.copy:
+        content: ""
+        dest: "./routers/v1/automation/{{ item.key }}/__init__.py"
+        force: no
+      loop: "{{ endpoint_config.endpoints | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+
+    - name: Template automation module endpoints to trigger AWX (.py files)
+      vars:
+        endpoint: "{{ item.value }}"
+      ansible.builtin.template:
+        src: ./templates/automation_endpoint.j2
+        dest: "./routers/v1/automation/{{ item.key }}//{{ item.key }}.py"
+      loop: "{{ endpoint_config.endpoints | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+...

@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: team-infra-ingress
+  namespace: team-automation
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name:  team-automation
+            port:
+              number: 80
+  ingressClassName: nginx
+status:
+  loadBalancer:
+    ingress:
+    - ip: 10.249.128.157

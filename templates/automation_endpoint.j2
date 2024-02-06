@@ -1,0 +1,32 @@
+from fastapi import APIRouter, Request, status
+from fastapi.responses import JSONResponse
+from internals.awx import awx
+
+
+router = APIRouter()
+
+{% for item in endpoint %}
+{% if item.payload %}
+@router.post("/{{ item.api_endpoint }}/launch", tags=[f"Automation - {{ item.api_endpoint | upper | replace("_"," ")  }} - Launch in { awx.awx_instance }"])
+async def applicationAwxAuditEnvironment(request: Request):
+    data = await request.json()
+    payload = awx.construct_awx_payload(data, {{ item.required_payload_keys }})
+    endpoint = f"application-awx-audit-connectivity"
+    launch_request = awx.launch_awx_job(request, endpoint, payload)
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=launch_request
+    )
+
+{% else %}
+@router.post("/{{ item.api_endpoint }}/launch", tags=[f"Automation - {{ item.api_endpoint | upper | replace("_"," ")  }} - Launch in { awx.awx_instance }"])
+async def applicationAwxAuditEnvironment(request: Request):
+    endpoint = f"application-awx-audit-environment"
+    launch_request = awx.launch_awx_job(request, endpoint)
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=launch_request
+    )
+
+{% endif %}
+{% endfor %}

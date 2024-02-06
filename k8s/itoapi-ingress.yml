@@ -1,0 +1,33 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: teampi
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    ingress.kubernetes.io/proxy-body-size: "500m"
+    nginx.org/proxy-connect-timeout: "30s"
+    nginx.org/proxy-read-timeout: "20s"
+    nginx.org/client-max-body-size: "500m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "36000"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "36000"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "36000"
+    # necessary for uploading XML files greater than 1 megabyte in size
+    nginx.ingress.kubernetes.io/proxy-body-size: "500m"
+spec:
+  rules:
+  - host: teampi-dev.domain.CompanyCompany.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+           name: team-automation
+           port: 
+             number: 8000
+#  tls:
+#  - hosts:
+#    -  teampi-dev.domain.CompanyCompany.com
+#    secretName: teampi-tls
+

@@ -1,0 +1,30 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+  labels:
+    app: team-automation
+  name: team-automation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: team-automation
+  template:
+    metadata:
+      labels:
+        app: team-automation
+    spec:
+      containers:
+      - image: domainontainerreg.CompanyCompany.com/team_cac/service_api_automation_orchestration:latest
+        name: team-orchestration-api
+        ports:
+        - containerPort: 8000
+        env:
+        - name: KUBECONFIG
+          value: "/usr/team/.kube/kubeconfig"
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: harbor-cred
+...
